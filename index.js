@@ -29,6 +29,32 @@ async function run() {
 
 
     const apartmentCollection = client.db("apartmentDB").collection("apartment");
+    const userCollection = client.db("apartmentDB").collection("user");
+
+
+// jwt token
+// app.post('/jwt', async (req, res) => {
+//   const user = req.body;
+//   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+//   res.send({ token });
+// })
+
+
+// middlewares 
+// const verifyToken = (req, res, next) => {
+//   console.log('inside verify token', req.headers.authorization);
+//   if (!req.headers.authorization) {
+//     return res.status(401).send({ message: 'unauthorized access' });
+//   }
+//   const token = req.headers.authorization.split(' ')[1];
+//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).send({ message: 'unauthorized access' })
+//     }
+//     req.decoded = decoded;
+//     next();
+//   })
+// }
 
     app.get('/apartment', async (req, res) => {
         const result = await apartmentCollection.find().toArray();
@@ -38,11 +64,26 @@ async function run() {
       app.post('/apartment', async (req, res) => {
   
         const job = req.body;
-        console.log(job)
         const result = await apartmentCollection.insertOne(job)
         res.send(result)
       })
 
+      // user
+      app.post('/user', async (req, res) => {
+  
+        const job = req.body;
+        const result = await userCollection.insertOne(job)
+        res.send(result)
+      })
+
+    //   app.get('/apartment/:email', async (req, res) => {
+    //     const email = req.params.email;
+    //     const query = { email: email }; // Find agreements by user email
+    //     const agreements = await apartmentCollection.find(query).toArray();
+    //     res.send(agreements);
+    // });
+
+     
 
 
     // Connect the client to the server	(optional starting in v4.7)
