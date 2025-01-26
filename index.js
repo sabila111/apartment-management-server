@@ -29,6 +29,7 @@ async function run() {
 
 
     const apartmentCollection = client.db("apartmentDB").collection("apartment");
+    const apartmentsCollection = client.db("apartmentDB").collection("apartments");
     const userCollection = client.db("apartmentDB").collection("user");
 
 
@@ -56,6 +57,19 @@ async function run() {
 //   })
 // }
 
+app.get('/apartments', async (req, res) => {
+  const result = await apartmentsCollection.find().toArray();
+  res.send(result);
+})
+
+app.post('/apartments', async (req, res) => {
+
+  const job = req.body;
+  const result = await apartmentsCollection.insertOne(job)
+  res.send(result)
+})
+
+// agrement
     app.get('/apartment', async (req, res) => {
         const result = await apartmentCollection.find().toArray();
         res.send(result);
@@ -69,12 +83,25 @@ async function run() {
       })
 
       // user
-      app.post('/user', async (req, res) => {
+      app.get('/members', async (req, res) => {
+       
+            const query = { role: "member" };  // Only get members
+            const members = await apartmentCollection.find(query).toArray();
+            res.send(members);
+        
+    });
   
-        const job = req.body;
-        const result = await userCollection.insertOne(job)
-        res.send(result)
-      })
+      // app.post('/user', async (req, res) => {
+  
+      //   const users = req.body;
+      //   const query = {email: users.email}
+      //   const extistingUser = await userCollection.findOne(query)
+      //   if(extistingUser){
+      //     return res.send({message : 'user created', insertedId: null})
+      //   }
+      //   const result = await userCollection.insertOne(users)
+      //   res.send(result)
+      // })
 
     //   app.get('/apartment/:email', async (req, res) => {
     //     const email = req.params.email;
