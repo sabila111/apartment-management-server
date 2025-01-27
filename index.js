@@ -32,6 +32,7 @@ async function run() {
     const apartmentsCollection = client.db("apartmentDB").collection("apartments");
     const userCollection = client.db("apartmentDB").collection("user");
     const announcementCollection = client.db("apartmentDB").collection("announcement");
+    const couponCollection = client.db("apartmentDB").collection("coupon");
 
 
 // jwt token
@@ -203,6 +204,25 @@ app.post('/apartments', async (req, res) => {
       res.send(result);
   });
 
+
+  // admin coupon request
+  app.get('/coupon', async (req, res) => {
+    const result = await couponCollection.find().toArray();
+    res.send(result);
+  })
+  
+  app.post('/coupon', async (req, res) => {
+  
+    const job = req.body;
+    console.log(job)
+    const result = await couponCollection.insertOne(job)
+    res.send(result)
+  })
+
+
+
+
+  
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
