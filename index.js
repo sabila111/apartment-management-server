@@ -38,14 +38,14 @@ async function run() {
 // jwt token
 app.post('/jwt', async (req, res) => {
   const user = req.body;
-  const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5h' });
   res.send({ token });
 })
 
 
 // middlewares 
 const verifyToken = (req, res, next) => {
-  console.log('inside verify token', req.headers.authorization);
+  // console.log('inside verify token', req.headers.authorization);
   if (!req.headers.authorization) {
     return res.status(401).send({ message: 'unauthorized access' });
   }
@@ -110,7 +110,7 @@ app.post('/apartments', async (req, res) => {
         
     });
 
-    app.patch('/members/:id',verifyToken,verifyAdmin,  async (req, res) => {
+    app.patch('/members/:id',verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -197,7 +197,7 @@ app.post('/apartments', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
-          $set: { role: "member" },
+          $set: { role: "member", status:'checked' },
       };
   
       const result = await apartmentCollection.updateOne(filter, updateDoc);
@@ -222,7 +222,7 @@ app.post('/apartments', async (req, res) => {
 
 
 
-  
+
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
