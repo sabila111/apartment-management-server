@@ -183,8 +183,25 @@ app.post('/apartments', async (req, res) => {
     res.send(result)
   })
 
+ 
 
-     
+    //  agreement request admin route
+
+    app.get('/apartment', async (req, res) => {
+      const result = await apartmentCollection.find({ status: "pending" }).toArray();
+      res.send(result);
+    })
+
+    app.patch("/apartment/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+          $set: { role: "member" },
+      };
+  
+      const result = await apartmentCollection.updateOne(filter, updateDoc);
+      res.send(result);
+  });
 
 
     // Connect the client to the server	(optional starting in v4.7)
