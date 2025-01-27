@@ -31,6 +31,7 @@ async function run() {
     const apartmentCollection = client.db("apartmentDB").collection("apartment");
     const apartmentsCollection = client.db("apartmentDB").collection("apartments");
     const userCollection = client.db("apartmentDB").collection("user");
+    const announcementCollection = client.db("apartmentDB").collection("announcement");
 
 
 // jwt token
@@ -56,6 +57,21 @@ const verifyToken = (req, res, next) => {
     next();
   })
 }
+
+
+ // use verify admin after verifyToken
+ const verifyAdmin = async (req, res, next) => {
+  const email = req.decoded.email;
+  const query = { email: email };
+  const user = await userCollection.findOne(query);
+  const isAdmin = user?.role === 'admin';
+  if (!isAdmin) {
+    return res.status(403).send({ message: 'forbidden access' });
+  }
+  next();
+}
+
+
 
 app.get('/apartments', async (req, res) => {
   const result = await apartmentsCollection.find().toArray();
@@ -93,7 +109,7 @@ app.post('/apartments', async (req, res) => {
         
     });
 
-    app.patch('/members/:id',  async (req, res) => {
+    app.patch('/members/:id',verifyToken,verifyAdmin,  async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -108,7 +124,7 @@ app.post('/apartments', async (req, res) => {
 
     // created admin
 
-    app.get("/user", verifyToken, async (req, res) => {
+    app.get("/user", verifyToken, verifyAdmin, async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
   });
@@ -141,7 +157,7 @@ app.post('/apartments', async (req, res) => {
       res.send(result)
     })
 
-    app.patch("/user/admin/:id", async (req, res) => {
+    app.patch("/user/admin/:id",verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -154,12 +170,19 @@ app.post('/apartments', async (req, res) => {
   
      
 
-    //   app.get('/apartment/:email', async (req, res) => {
-    //     const email = req.params.email;
-    //     const query = { email: email }; // Find agreements by user email
-    //     const agreements = await apartmentCollection.find(query).toArray();
-    //     res.send(agreements);
-    // });
+  //  announcement
+  app.get('/announcement', async (req, res) => {
+    const result = await announcementCollection.find().toArray();
+    res.send(result);
+  })
+
+  app.post('/announcement', async (req, res) => {
+  
+    const job = req.body;
+    const result = await announcementCollection.insertOne(job)
+    res.send(result)
+  })
+
 
      
 
