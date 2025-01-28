@@ -2,8 +2,13 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+
+console.log(process.env.STRIPE_SECRET_KEY); 
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
 
 const port = process.env.PORT || 5000
 
@@ -109,7 +114,17 @@ app.post('/apartments', async (req, res) => {
             res.send(members);
         
     });
-
+// 
+    app.get('/members/:email', async (req, res) => {
+      const { email } = req.params;
+      
+    
+          const member = await apartmentCollection.findOne({ userEmail: email });
+          console.log(member); 
+         
+      res.send(member);
+  });
+  
     app.patch('/members/:id',verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -118,9 +133,11 @@ app.post('/apartments', async (req, res) => {
           role: 'user',
         },
       };
-      const result = await apartmentCollection.updateOne(filter, updatedDoc);
+      const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
+
+   
 
 
     // created admin
@@ -146,20 +163,7 @@ app.post('/apartments', async (req, res) => {
     res.send({ admin });
   })
 
-  app.get('/user/member/:email', verifyToken, async (req, res) => {
-    const email = req.params.email;
-
-    if (email !== req.decoded.email) {
-      return res.status(403).send({ message: 'forbidden access' })
-    }
-    const query = { email: email };
-    const user = await userCollection.findOne(query);
-    let admin = false;
-    if (user) {
-      admin = user?.role === 'member';
-    }
-    res.send({ admin });
-  })
+ 
 
     app.post('/user', async (req, res) => {
   
@@ -208,6 +212,20 @@ app.post('/apartments', async (req, res) => {
       res.send(result);
     })
 
+    app.get('/apartment/members/:email', async (req, res) => {
+      const email = req.params.email;
+  
+      
+      const query = { userEmail: email };
+      const user = await apartmentCollection.findOne(query);
+      let member = false;
+      if (user) {
+        member = user?.role === 'member';
+      }
+      res.send({ member });
+    })
+  
+
     app.patch("/apartment/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -219,7 +237,29 @@ app.post('/apartments', async (req, res) => {
       res.send(result);
   });
 
+ 
 
+// payment
+app.post('/create-payment-intent', async (req, res) => {
+  const { rent } = req.body;
+  const amount = parseInt(rent * 100);
+  console.log(amount, 'amount inside the intent')
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: 'usd',
+    payment_method_types: ['card']
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret
+  })
+});
+
+
+
+
+  
   // admin coupon request
   app.get('/coupon', async (req, res) => {
     const result = await couponCollection.find().toArray();
