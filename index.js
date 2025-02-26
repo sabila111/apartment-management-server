@@ -133,7 +133,7 @@ app.post('/apartments', async (req, res) => {
           role: 'user',
         },
       };
-      const result = await userCollection.updateOne(filter, updatedDoc);
+      const result = await apartmentCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
@@ -275,15 +275,41 @@ app.post('/create-payment-intent', async (req, res) => {
   })
 
 
+ 
+app.patch('/coupon/:id', async (req, res) => {
+  const { id } = req.params;
+  const { isAvailable } = req.body; 
+
+  try {
+    const result = await couponCollection.updateOne(
+      { _id: new ObjectId(id) }, 
+      { $set: { isAvailable: 'available' } }  
+    );
+
+    if (result.modifiedCount > 0) {
+      res.status(200).send({ message: 'Coupon availability updated successfully' });
+    } else {
+      res.status(404).send({ message: 'Coupon not found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: 'Failed to update coupon availability' });
+  }
+});
+
+  
+  
+
+
 
 
 
 
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.connect();
+    // // Send a ping to confirm a successful connection
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
