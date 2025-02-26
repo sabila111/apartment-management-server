@@ -38,6 +38,7 @@ async function run() {
     const userCollection = client.db("apartmentDB").collection("user");
     const announcementCollection = client.db("apartmentDB").collection("announcement");
     const couponCollection = client.db("apartmentDB").collection("coupon");
+    const featuredCollection = client.db("apartmentDB").collection("featured");
 
 
 // jwt token
@@ -77,6 +78,20 @@ const verifyToken = (req, res, next) => {
   next();
 }
 
+
+
+app.get('/featured', async (req, res) => {
+  const result = await featuredCollection.find().toArray();
+  res.send(result);
+})
+
+app.post('/featured', async (req, res) => {
+
+  const job = req.body;
+  console.log(job)
+  const result = await featuredCollection.insertOne(job)
+  res.send(result)
+})
 
 
 app.get('/apartments', async (req, res) => {
